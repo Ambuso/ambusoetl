@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ambusoetl"
+version = "0.1.0"
+description = "ambusoetl, an end-to-end ETL (Extract, Transform, Load) pipeline development package using pandas, requests, psycopg2-binary"
+authors = [
+    {"name"="Dismas Mike", "email"="dismasmik3@gmail.com"}
+]
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.7"
+dependencies = [
+    "pandas",
+    "requests",
+    "sqlalchemy",
+    "psycopg2-binary",
+    "numpy"
+]
+
+[tool.setuptools]
+packages = ["ambusoetl"]
+
+
+
