@@ -1,85 +1,101 @@
 # ambusoetl
-# 🌦️ Weather ETL Pipeline Project
-This is a simple ETL (Extract, Transform, Load) pipeline that fetches real-time weather data from the OpenWeatherMap API and stores it in a PostgreSQL database. The script is written in Python and leverages the requests, pandas, and psycopg2 libraries.
 
-# 🛠 Features
-Extracts current weather data (temperature, humidity, description, and city name) from the OpenWeatherMap API.
-Transforms the data into a clean and structured format using a pandas DataFrame.
-Loads the data into a PostgreSQL table within a schema named assignment.
-Automatically creates the required schema and table if they don’t exist.
+A small Python ETL package that fetches the current weather for a city from the OpenWeatherMap API and loads it into PostgreSQL.
 
-# 📦 Project Structure
-weather_etl_project/
-│
-├── weather_etl.py        # Main ETL script
-├── .env                  # Environment variables (not committed)
-├── requirements.txt      # Python dependencies
-└── README.md             # Project documentation
+## Architecture
 
-# ⚙️ Setup Instructions
-## 1. Clone the repository
-git clone https://github.com/your-username/weather-etl-project.git
-cd weather-etl-project
+```mermaid
+flowchart LR
+    API["OpenWeatherMap API<br/>current weather"]
+    DB[("PostgreSQL<br/>assignment.weather_data")]
 
-## 2. Install dependencies
-pip install -r requirements.txt
+    subgraph Package["ambusoetl"]
+        E["extract.py<br/>fetch_weather()"]
+        T["transform.py<br/>transform_weather_data()"]
+        L["load.py<br/>load_data()"]
+        E -->|JSON| T -->|DataFrame| L
+    end
 
-## 3. Create a .env file
-Create a .env file in the project root and add the following environment variables:
+    API --> E
+    L --> DB
+```
+
+## How it works
+
+1. **Extract** (`extract.py`): calls the OpenWeatherMap current weather endpoint for one city, in metric units, and returns the JSON response.
+2. **Transform** (`transform.py`): keeps the city, temperature, description and humidity, and returns them as a one-row pandas DataFrame.
+3. **Load** (`load.py`): creates the `assignment` schema and `weather_data` table if they are missing, then inserts the row.
+
+`main.py` is the same pipeline written as a single script.
+
+## Install
+
+```bash
+git clone https://github.com/Ambuso/ambusoetl.git
+cd ambusoetl
+pip install . python-dotenv
+```
+
+Create a `.env` file in the folder you run from:
+
+```
 API_KEY=your_openweathermap_api_key
+api_key=your_openweathermap_api_key
 CITY_NAME=Nairobi
-DB_NAME=your_db_name
-DB_HOST=your_db_host
-DB_USER=your_db_user
-DB_PASSWORD=your_db_password
+
+DB_NAME=your_database
+DB_HOST=your_host
+DB_USER=your_user
+DB_PASSWORD=your_password
 DB_PORT=5432
+```
 
-## 4. Run the ETL script
-python weather_etl.py
+The key is listed twice because `main.py` reads `API_KEY` and `extract.py` reads `api_key`. `CITY_NAME` is optional and defaults to Nairobi.
 
-# 🧪 Sample Output
-Weather DataFrame:
-     City  Temperature    Description  Humidity
-0  Nairobi         25.6  scattered clouds       65
+## Use it
 
-Weather data inserted successfully into PostgreSQL.
+As a package:
 
-# 🗃️ PostgreSQL Table Schema
-Table: assignment.weather_data
+```python
+from ambusoetl.extract import fetch_weather
+from ambusoetl.transform import transform_weather_data
+from ambusoetl.load import load_data
 
-| Column      | Type   | Description            |
-| ----------- | ------ | ---------------------- |
-| id          | SERIAL | Primary key            |
-| city        | TEXT   | City name              |
-| temperature | FLOAT  | Temperature in Celsius |
-| description | TEXT   | Weather description    |
-| humidity    | INT    | Humidity percentage    |
+load_data(transform_weather_data(fetch_weather()))
+```
 
-# ✅ Dependencies
-Dependencies
-Python 3.7+
-requests
-pandas
-psycopg2
-python-dotenv
+Or as a single script:
 
-# 👤 Author
-Name: Ambuso Dismas
-Role: Data Engineer
-GitHub: ambuso
-Blog:https://dev.to/dismas_mike
-Email: dismasmik3@gmail.com
+```bash
+python -m ambusoetl.main
+```
 
-# 📄 License
-This project is licensed under the MIT License.
+## Output table
 
-# 🤝 Contributions
-Pull requests are welcome!
-If you'd like to suggest a feature or report a bug, please open an issue on GitHub.
+`assignment.weather_data`
 
+| Column | Type | Meaning |
+|---|---|---|
+| id | serial | Primary key |
+| city | text | City name |
+| temperature | float | Temperature in Celsius |
+| description | text | Weather description |
+| humidity | int | Humidity in percent |
 
+## Files
 
+```
+ambusoetl/extract.py     API request
+ambusoetl/transform.py   JSON to DataFrame
+ambusoetl/load.py        DataFrame to PostgreSQL
+ambusoetl/main.py        The whole pipeline as one script
+pyproject.toml           Package definition
+```
 
+## Built with
 
+Python, requests, pandas, psycopg2, PostgreSQL
 
+## License
 
+MIT
