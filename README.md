@@ -4,21 +4,7 @@ A small Python ETL package that fetches the current weather for a city from the 
 
 ## Architecture
 
-```mermaid
-flowchart LR
-    API["OpenWeatherMap API<br/>current weather"]
-    DB[("PostgreSQL<br/>assignment.weather_data")]
-
-    subgraph Package["ambusoetl"]
-        E["extract.py<br/>fetch_weather()"]
-        T["transform.py<br/>transform_weather_data()"]
-        L["load.py<br/>load_data()"]
-        E -->|JSON| T -->|DataFrame| L
-    end
-
-    API --> E
-    L --> DB
-```
+![Architecture: OpenWeatherMap API to extract, transform and load modules to PostgreSQL](docs/architecture.png)
 
 ## How it works
 
